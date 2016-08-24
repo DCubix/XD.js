@@ -1,7 +1,93 @@
 "use strict"; 
 
-var frameTime = 0.0166; // 60 fps
-var xD = {};
+/// Simple asset manager
+class AssetManager {
+	constructor() {
+		this.queue = [];
+		this.cache = {};
+		this.e = 0;
+		this.s = 0;
+	}
+	queueAsset(path, type) {
+		this.queue.push([path, type]);
+	}
+	downloadAll(callback) {
+		if (this.queue.length == 0) { callback(); }
+		for (var k in this.queue) {
+			var item = this.queue[k];
+			var asset;
+			var that = this;
+			if (item[1] == "image") {
+				asset = new Image();
+				asset.onload = function() {
+					that.s++;
+					if (that.finished()) {
+						callback();
+					}
+				};
+			} else if (item[1] == "audio") {
+				asset = new Audio();
+				asset.onloadeddata = function() {
+					that.s++;
+					if (that.finished()) {
+						callback();
+					}
+				};
+			}
+			asset.onerror = function() {
+				that.e++;
+				if (that.finished()) {
+					callback();
+				}
+			};
+			asset.src = item[0];
+			this.cache[item[0]] = asset;
+		}
+	}
+	finished() {
+		return this.queue.length == this.e + this.s;
+	}
+	getAsset(path) {
+		return this.cache[path];
+	}
+}
+
+/// Engine
+var t = (new Date()).getTime();
+var xD = {
+	frameTime: 0.0,
+	current: t,
+	last: t,
+	init: false,
+	onload: null,
+	assets: new AssetManager(),
+	_$: function(game, c, fps) {
+		if (!this.init) {
+			fps = fps || 60;
+			this.frameTime = 1.0 / fps;
+			Input.start(c);
+			game.init(c);
+			this.init = true;
+		}
+		animationTimeout(this._$.bind(this, game));
+		this.current = (new Date()).getTime();
+		var delta = (this.current - this.last) / 1000;
+		this.last = this.current;
+		game.update(Math.min(delta, frameTime));
+	},
+	start: function(game, w, h, fps) {
+		var that = this;
+		this.assets.downloadAll(function() {
+			var c = document.createElement("canvas");
+			c.width = w;
+			c.height = h;
+			document.body.appendChild(c);
+			game.canvas = c;
+			if (that.onload != null) { that.onload(that.assets); }
+			that._$(game, c, fps);
+		});
+	}
+};
 
 /// Utility
 var util = {
@@ -20,7 +106,7 @@ var animationTimeout = (function () {
 	return  window.requestAnimationFrame 		||
 			window.webkitRequestAnimationFrame  ||
 			window.mozRequestAnimationFrame 	||
-			function(callback){ window.setTimeout(callback, frameTime); };
+			function(callback){ window.setTimeout(callback, xD.frameTime); };
 })();
 
 Math.lerp = function(a,b,t) {
@@ -641,89 +727,3 @@ class Game {
 		}
 	}
 }
-
-/// Simple asset manager
-class AssetManager {
-	constructor() {
-		this.queue = [];
-		this.cache = {};
-		this.e = 0;
-		this.s = 0;
-	}
-	queueAsset(path, type) {
-		this.queue.push([path, type]);
-	}
-	downloadAll(callback) {
-		if (this.queue.length == 0) { callback(); }
-		for (var k in this.queue) {
-			var item = this.queue[k];
-			var asset;
-			var that = this;
-			if (item[1] == "image") {
-				asset = new Image();
-				asset.onload = function() {
-					that.s++;
-					if (that.finished()) {
-						callback();
-					}
-				};
-			} else if (item[1] == "audio") {
-				asset = new Audio();
-				asset.onloadeddata = function() {
-					that.s++;
-					if (that.finished()) {
-						callback();
-					}
-				};
-			}
-			asset.onerror = function() {
-				that.e++;
-				if (that.finished()) {
-					callback();
-				}
-			};
-			asset.src = item[0];
-			this.cache[item[0]] = asset;
-		}
-	}
-	finished() {
-		return this.queue.length == this.e + this.s;
-	}
-	getAsset(path) {
-		return this.cache[path];
-	}
-}
-
-/// Engine
-var t = (new Date()).getTime();
-xD.engine = {
-	current: t,
-	last: t,
-	init: false,
-	onload: null,
-	assets: new AssetManager(),
-	_$: function(game, c) {
-		if (!this.init) {
-			Input.start(c);
-			game.init(c);
-			this.init = true;
-		}
-		animationTimeout(this._$.bind(this, game));
-		this.current = (new Date()).getTime();
-		var delta = (this.current - this.last) / 1000;
-		this.last = this.current;
-		game.update(Math.min(delta, frameTime));
-	},
-	start: function(game, w, h) {
-		var that = this;
-		this.assets.downloadAll(function() {
-			var c = document.createElement("canvas");
-			c.width = w;
-			c.height = h;
-			document.body.appendChild(c);
-			game.canvas = c;
-			if (that.onload != null) { that.onload(that.assets); }
-			that._$(game, c);
-		});
-	}
-};

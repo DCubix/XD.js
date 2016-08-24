@@ -18,13 +18,13 @@ var player = game.states["game"].new("player");
 player.position.set(100, 100);
 
 // Asset Loading
-xD.engine.assets.queueAsset("player.png", "image");
-xD.engine.onload = function(assets) {
+xD.assets.queueAsset("player.png", "image");
+xD.onload = function(assets) {
 	var sprite = new Sprite(assets.getAsset("player.png"));
 	player.addComponent(sprite);
 };
 
 // Start engine
-xD.engine.start(game, 512, 512);
+xD.start(game, 512, 512);
 
 ```
