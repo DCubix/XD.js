@@ -46,15 +46,74 @@ class Vec2 {
 		this.x = x || 0;
 		this.y = y || 0;
 	}
+	dot(o) {
+		return this.x * o.x + this.y * o.y;
+	}
 	get length() {
-		return Math.sqrt(this.x * this.x + this.y * this.y);
+		return Math.sqrt(this.dot(this));
 	}
 	normalized() {
-		var l = this.len();
+		var l = this.length;
 		return new Vec2(this.x / l, this.y / l);
 	}
 	clone() {
 		return new Vec2(this.x, this.y);
+	}
+	add(o) {
+		var r = new Vec2();
+		if (o instanceof Vec2) {
+			r.x = this.x + o.x;
+			r.y = this.y + o.y;
+		} else {
+			r.x = this.x + o;
+			r.y = this.y + o;
+		}
+		return r;
+	}
+	sub(o) {
+		var r = new Vec2();
+		if (o instanceof Vec2) {
+			r.x = this.x - o.x;
+			r.y = this.y - o.y;
+		} else {
+			r.x = this.x - o;
+			r.y = this.y - o;
+		}
+		return r;
+	}
+	mul(o) {
+		var r = new Vec2();
+		if (o instanceof Vec2) {
+			r.x = this.x * o.x;
+			r.y = this.y * o.y;
+		} else {
+			r.x = this.x * o;
+			r.y = this.y * o;
+		}
+		return r;
+	}
+	div(o) {
+		var r = new Vec2();
+		if (o instanceof Vec2) {
+			r.x = this.x / o.x;
+			r.y = this.y / o.y;
+		} else {
+			r.x = this.x / o;
+			r.y = this.y / o;
+		}
+		return r;
+	}
+	angle() {
+		return Math.atan2(this.y, this.x);
+	}
+	angleTo(o) {
+		return o.sub(this).angle();
+	}
+	lerp(tg, t) {
+		return new Vec2(
+			Math.lerp(this.x, tg.x, t),
+			Math.lerp(this.y, tg.y, t)
+		);
 	}
 }
 
@@ -74,7 +133,7 @@ class Component {
 		var c = new Component();
 		c.active = this.active;
 		c.zorder = this.zorder;
-		c.offset = util.clone(this.offset);
+		c.offset = this.offset.clone();
 		return c;
 	}
 }
