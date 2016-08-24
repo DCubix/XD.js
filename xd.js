@@ -267,7 +267,7 @@ class AnimatedSprite extends Sprite {
 		this.conf = [cols, rows];
 		return this;
 	}
-	addAnim(name, speed, loop, frames) {
+	addAnimation(name, speed, loop, frames) {
 		this.animations[name] = {
 			speed: speed,
 			loop: loop,
@@ -278,7 +278,7 @@ class AnimatedSprite extends Sprite {
 		this.animation = this.animation == "" ? name : this.animation;
 		return this;
 	}
-	getAnim(name) {
+	getAnimation(name) {
 		return this.animations[name];
 	}
 	update(dt) {
