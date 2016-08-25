@@ -1,4 +1,36 @@
-"use strict"; 
+"use strict";
+
+(function() {
+	var lastTime = 0;
+	var vendors = ['ms', 'moz', 'webkit', 'o'];
+	for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+		window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+		window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+									|| window[vendors[x]+'CancelRequestAnimationFrame'];
+	}
+	if (!window.requestAnimationFrame){
+		var tid = null, cbs = [], nb = 0, ts = 0;
+		function animate() {
+			var i, clist = cbs, len = cbs.length;
+			tid = null;
+			ts = Date.now();
+			cbs = [];
+			nb += clist.length;
+			for (i = 0; i < len; i++){
+				if(clist[i])
+					clist[i](ts);
+			}
+		}
+		window.requestAnimationFrame = function(cb) {
+			if (tid == null)
+			  tid = window.setTimeout(animate, Math.max(0, 20 + ts - Date.now()));
+			return cbs.push(cb) + nb;
+		};
+		window.cancelAnimationFrame = function(id) {
+			delete cbs[id - nb - 1];
+		};
+	}
+}());
 
 /// Simple asset manager
 class AssetManager {
@@ -70,7 +102,7 @@ var xD = {
 			game.init(c);
 			this.init = true;
 		}
-		animationTimeout(this._$.bind(this, game));
+		window.requestAnimationFrame(this._$.bind(this, game));
 
 		this.current = (new Date()).getTime();
 		var delta = (this.current - this.last) / 1000;
@@ -147,12 +179,6 @@ var util = {
 		return m;
 	}
 };
-var animationTimeout = (function () {
-	return  window.requestAnimationFrame 		||
-			window.webkitRequestAnimationFrame  ||
-			window.mozRequestAnimationFrame 	||
-			function(callback){ window.setTimeout(callback, xD.frameTime); };
-})();
 
 Math.lerp = function(a,b,t) {
 	return (1-t)*a+b*t;
