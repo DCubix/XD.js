@@ -678,6 +678,12 @@ var Input = {
 			Input.touches[k].y = t.clientY - r.top;
 		}
 	},
+	getMouseInStage: function(stage) {
+		var mc = this.mouse.clone();
+		mc.x -= stage.camera_position.x;
+		mc.y -= stage.camera_position.y;
+		return mc;
+	},
 	start: function(c) {
 		Input.c = c;
 		var w = window;
@@ -700,6 +706,7 @@ class Stage {
 		this._rem = [];
 		this.id = id;
 		this.camera = { x: 0, y: 0, zoom: 1 };
+		this.camera_position = new Vec2();
 		this.backColor = "#000000";
 		this.post_draw = [];
 	}
@@ -746,8 +753,10 @@ class Stage {
 		var ents = this.entities.sort(function(a, b) {
 			return a.zorder > b.zorder ? 1 : -1;
 		});
+		this.camera_position.x = ~~(this.camera.x + w);
+		this.camera_position.y = ~~(this.camera.y + h);
 		ctx.save();
-		ctx.translate(~~(-this.camera.x + w), ~~(-this.camera.y + h));
+		ctx.translate(-this.camera_position.x, -this.camera_position.y);
 		ctx.scale(this.camera.zoom, this.camera.zoom);
 		for (var key in ents) {
 			var ent = ents[key];
