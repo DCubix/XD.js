@@ -60,6 +60,7 @@ var xD = {
 	last: t,
 	init: false,
 	onload: null,
+	resized: true,
 	assets: new AssetManager(),
 	_$: function(game, c, fps) {
 		if (!this.init) {
@@ -70,18 +71,62 @@ var xD = {
 			this.init = true;
 		}
 		animationTimeout(this._$.bind(this, game));
+
 		this.current = (new Date()).getTime();
 		var delta = (this.current - this.last) / 1000;
 		this.last = this.current;
-		game.update(Math.min(delta, frameTime));
+		game.update(Math.min(delta, xD.frameTime));
 	},
-	start: function(game, w, h, fps) {
+	start: function(game, fps) {
 		var that = this;
 		this.assets.downloadAll(function() {
 			var c = document.createElement("canvas");
-			c.width = w;
-			c.height = h;
+			c.style.position = "absolute";
+			document.body.style.margin = "0";
+			document.body.style.padding = "0";
+			document.body.style.overflow = "hidden";
+			document.body.style.width = "100%";
+			document.body.style.height = "100%";
+			window.onresize = function() {
+				var viewport, nw, nh, nx, ny;
+				viewport = {
+					width: window.innerWidth,
+					height: window.innerHeight
+				};
+
+				if (game.height / game.width > viewport.height / viewport.width) {
+					if (game.safeHeight / game.width > viewport.height / viewport.width) {
+						nh = viewport.height * game.height / game.safeHeight;
+						nw = nh * game.width / game.height;
+					} else {
+						nw = viewport.width;
+						nh = nw * game.height / game.width;
+					}
+				} else {
+					if (game.height / game.safeWidth > viewport.height / viewport.width) {
+						nh = viewport.height;
+						nw = nh * game.width / game.height;
+					} else {
+						nw = viewport.width * game.width / game.safeWidth;
+						nh = nw * game.height / game.width;
+					}
+				}
+
+				c.width = nw;
+				c.height = nh;
+				c.style.width = nw + "px";
+				c.style.height = nh + "px";
+
+				nx = (viewport.width - nw) / 2;
+				ny = (viewport.height - nh) / 2;
+
+				c.style.margin = ny + "px " + nx + "px";
+			};
+			window.onresize();
+			
 			document.body.appendChild(c);
+			document.body.style.margin = "0";
+
 			game.canvas = c;
 			if (that.onload != null) { that.onload(that.assets); }
 			that._$(game, c, fps);
@@ -697,13 +742,18 @@ class Stage {
 
 /// State-based game
 class Game {
-	constructor() {
+	constructor(width, height, safeWidth, safeHeight) {
 		this.states = {};
 		this.stage = null;
 		this.canvas = null;
 		this.ctx = null;
 		this.timeScale = 1.0;
 		this.debug = false;
+
+		this.width = width || 1280;
+		this.height = height || 800;
+		this.safeWidth = safeWidth || 1024;
+		this.safeHeight = safeHeight || 720;
 	}
 	registerState(name) {
 		this.states[name] = new Stage(name);
@@ -717,10 +767,11 @@ class Game {
 		this.ctx = this.canvas.getContext("2d");
 	}
 	update(dt) {
+		var c = this.canvas;
 		if (this.stage != null) {
 			this.stage.update(dt * this.timeScale);
 			this.ctx.fillStyle = this.stage.bg;
-			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+			this.ctx.fillRect(0, 0, c.width, c.height);
 			this.ctx.imageSmoothingEnabled = false;
 			this.ctx.mozImageSmoothingEnabled = false;
 			this.stage.render(this.ctx, this.debug);
