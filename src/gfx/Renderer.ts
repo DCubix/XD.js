@@ -18,6 +18,7 @@ namespace gfx {
 			this._state = new RendererState();
 
 			this._vbo = XD.GL.createBuffer();
+			this._prevVBOSize = 0;
 
 			this._shapes = new Array();
 			this._batches = new Array();
@@ -235,11 +236,11 @@ namespace gfx {
 
 			XD.GL.bindBuffer(XD.GL.ARRAY_BUFFER, this._vbo);
 			XD.GL.enableVertexAttribArray(pos);
-			XD.GL.vertexAttribPointer(pos, 3, XD.GL.FLOAT, false, Vertex.SIZE, 0);
+			XD.GL.vertexAttribPointer(pos, 3, XD.GL.FLOAT, false, Vertex.SIZE_BYTES, 0);
 			XD.GL.enableVertexAttribArray(uv);
-			XD.GL.vertexAttribPointer(uv, 2, XD.GL.FLOAT, false, Vertex.SIZE, 12);
+			XD.GL.vertexAttribPointer(uv, 2, XD.GL.FLOAT, false, Vertex.SIZE_BYTES, 12);
 			XD.GL.enableVertexAttribArray(color);
-			XD.GL.vertexAttribPointer(color, 4, XD.GL.FLOAT, true, Vertex.SIZE, 20);
+			XD.GL.vertexAttribPointer(color, 4, XD.GL.FLOAT, true, Vertex.SIZE_BYTES, 20);
 
 			for (let b of this._batches) {
 				if (b.texture) {
@@ -366,7 +367,7 @@ namespace gfx {
 				vertices = vertices.concat(a.vertices);
 			}
 
-			let vsize = (Vertex.SIZE / 4);
+			let vsize = Vertex.SIZE;
 			let vdata = new Float32Array(vertices.length * vsize);
 			let k = 0;
 			for (let v of vertices) {
@@ -383,13 +384,14 @@ namespace gfx {
 			}
 			
 			XD.GL.bindBuffer(XD.GL.ARRAY_BUFFER, this._vbo);
-			let vboSize = vertices.length * Vertex.SIZE;
+			let vboSize = vertices.length * vsize;
 			if (vboSize > this._prevVBOSize) {
-				XD.GL.bufferData(XD.GL.ARRAY_BUFFER, vboSize, XD.GL.DYNAMIC_DRAW);
+				XD.GL.bufferData(XD.GL.ARRAY_BUFFER, new Float32Array(vboSize), XD.GL.DYNAMIC_DRAW);
 				this._prevVBOSize = vboSize;
 			}
 			XD.GL.bufferSubData(XD.GL.ARRAY_BUFFER, 0, vdata);
-			XD.GL.bindBuffer(XD.GL.ARRAY_BUFFER, 0);
+
+			XD.GL.bindBuffer(XD.GL.ARRAY_BUFFER, null);
 		}
 	}
 }

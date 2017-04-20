@@ -146,7 +146,7 @@ namespace math {
 			return this.m[row * 4 + col];
 		}
 
-		set(col: number, row: number, value: number) {
+		set(row: number, col: number, value: number) {
 			this.m[row * 4 + col] = value;
 		}
 

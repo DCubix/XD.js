@@ -9,6 +9,19 @@
 		<script type="text/javascript">
 			var canvas = document.getElementById("game");
 			var engine = new XD.Engine();
+			var xd = null;
+			engine.onpreload = function(a) {
+				a.addAsset("xd.png", core.AssetType.TEXTURE);
+			};
+			engine.onload = function(a, ge) {
+				console.log("OK: " + a.getAsset("xd.png").width);
+				xd = a.getAsset("xd.png");
+			};
+			engine.ondebugrender = function(ren) {
+				if (xd) {
+					ren.drawSprite(xd);
+				}
+			};
 			engine.start(canvas);
 		</script>
 	</body>

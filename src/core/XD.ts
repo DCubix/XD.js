@@ -27,6 +27,7 @@ namespace XD {
 		// Callbacks
 		onpreload: (am: core.Assets) => void;
 		onload: (am: core.Assets, ge: Engine) => void;
+		ondebugrender: (ren: gfx.Renderer) => void;
 
 		constructor(fps: number=60.0) {
 			this._frameTime = 1.0 / fps;
@@ -99,6 +100,7 @@ namespace XD {
 			XD.renderer.clear();
 			XD.renderer.begin();
 			this._game.onRender(XD.renderer);
+			this.ondebugrender(XD.renderer);
 			XD.renderer.end();
 			XD.renderer.render();
 

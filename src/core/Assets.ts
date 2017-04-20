@@ -1,7 +1,7 @@
 namespace core {
 	export enum AssetType {
-		TEXTURE,
-		AUDIO
+		TEXTURE = 0,
+		AUDIO = 1
 	}
 
 	export class Assets {
@@ -32,37 +32,45 @@ namespace core {
 		load(onload: () => void): void {
 			if (this._queue.length == 0) { onload(); }
 			for (let [path, type] of this._queue) {
-				let asset;
 				let that = this;
 				switch (type) {
 					case AssetType.TEXTURE: {
-						asset = new Image();
-						asset.onload = function () {
+						let img = new Image();
+						img.onload = function () {
 							that._success++;
-							// TODO: Gen Texture
+							let tex = new gfx.Texture();
+							tex.setToImage(img);
+							that._cache[path] = tex;
 							if (that.finished) {
 								onload();
 							}
 						};
+						img.onerror = function () {
+							that._error++;
+							if (that.finished) {
+								onload();
+							}
+						};
+						img.src = path;
 					} break;
 					case AssetType.AUDIO: {
-						asset = new Audio();
-						asset.onloadeddata = function () {
+						let aud = new Audio();
+						aud.onloadeddata = function () {
 							that._success++;
+							that._cache[path] = aud;
 							if (that.finished) {
 								onload();
 							}
 						};
+						aud.onerror = function () {
+							that._error++;
+							if (that.finished) {
+								onload();
+							}
+						};
+						aud.src = path;
 					} break;
 				}
-				asset.onerror = function () {
-					that._error++;
-					if (that.finished) {
-						onload();
-					}
-				};
-				asset.src = path;
-				this._cache[path] = asset;
 			}
 		}
 

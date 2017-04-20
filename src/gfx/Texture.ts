@@ -71,10 +71,14 @@ namespace gfx {
 			this._gltex = XD.GL.createTexture();
 			this.bind();
 			this.setFilter(XD.GL.NEAREST, XD.GL.NEAREST);
-			this.setWrap(XD.GL.REPEAT, XD.GL.REPEAT);
 
-			XD.GL.texImage2D(XD.GL.TEXTURE_2D, 0,  XD.GL.RGBA, XD.GL.RGBA, XD.GL.UNSIGNED_BYTE, img);
-			XD.GL.generateMipmap(XD.GL.TEXTURE_2D);
+			if (!Texture.isPO2(img.width) || !Texture.isPO2(img.height)) {
+				this.setWrap(XD.GL.CLAMP_TO_EDGE, XD.GL.CLAMP_TO_EDGE);
+			} else {
+				this.setWrap(XD.GL.REPEAT, XD.GL.REPEAT);
+			}
+
+			XD.GL.texImage2D(XD.GL.TEXTURE_2D, 0, XD.GL.RGBA, XD.GL.RGBA, XD.GL.UNSIGNED_BYTE, img);
 			this.unbind();
 		}
 
@@ -93,5 +97,8 @@ namespace gfx {
 			XD.GL.generateMipmap(XD.GL.TEXTURE_2D);
 		}
 
+		private static isPO2(x: number): boolean {
+			return (x != 0) && ((x & (x - 1)) == 0);
+		}
 	}
 }
