@@ -75,9 +75,9 @@ namespace core {
 			}
 		}
 
-		onRender(): void {
+		onRender(renderer: gfx.Renderer): void {
 			for (let e of this._entities) {
-				e.onRender();
+				e.onRender(renderer);
 			}
 		}
 

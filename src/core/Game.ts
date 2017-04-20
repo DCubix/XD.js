@@ -32,10 +32,10 @@ namespace core {
 			
 		}
 
-		onRender(): void {
+		onRender(renderer: gfx.Renderer): void {
 			if (!this._switching && this._currentState.length > 0) {
 				let c: State = this._states[this._currentState];
-				c.onRender();
+				c.onRender(renderer);
 			}
 		}
 

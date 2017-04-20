@@ -17,6 +17,10 @@ namespace gfx {
 			this._gltex = null;
 		}
 
+		get gl(): WebGLTexture {
+			return this._gltex;
+		}
+
 		get width(): number {
 			return this._width;
 		}

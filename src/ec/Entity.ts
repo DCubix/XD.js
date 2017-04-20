@@ -73,9 +73,9 @@ namespace ec {
 			}
 		}
 
-		onRender(): void {
+		onRender(renderer: gfx.Renderer): void {
 			for (let comp of this._components) {
-				comp.onRender();
+				comp.onRender(renderer);
 			}
 		}
 

@@ -11,7 +11,7 @@ namespace ec {
 		}
 
 		onStart(): void { }
-		onRender(/* Renderer */): void { }
+		onRender(renderer: gfx.Renderer): void { }
 		onUpdate(dt: number): void { }
 		onDestroy(): void { }
 

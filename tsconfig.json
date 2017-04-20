@@ -3,7 +3,8 @@
 		"outFile": "./build/xD.js",
 		"allowJs": false,
 		"removeComments": true,
-		"target": "ES5"
+		"target": "ES5",
+		"alwaysStrict": true
 	},
 	"include": [
 		"./src/**/*"

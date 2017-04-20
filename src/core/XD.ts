@@ -1,8 +1,9 @@
 namespace XD {
-	export var GL: WebGLRenderingContext;
-	export var assets: core.Assets;
-	export var engine: Engine;
-	export var currentState: core.State;
+	export var GL: WebGLRenderingContext = null;
+	export var assets: core.Assets = null;
+	export var engine: Engine = null;
+	export var currentState: core.State = null;
+	export var renderer: gfx.Renderer = null;
 
 	export class Engine {
 		static readonly MAX_FPS_SAMPLES: number = 24;
@@ -18,6 +19,10 @@ namespace XD {
 		private _frames: number;
 
 		private _game: core.Game;
+
+		// misc
+		private _prevWidth: number;
+		private _prevHeight: number;
 
 		// Callbacks
 		onpreload: (am: core.Assets) => void;
@@ -40,6 +45,12 @@ namespace XD {
 			XD.GL = canvas.getContext("webgl");
 			XD.assets = new core.Assets();
 			XD.engine = this;
+			XD.renderer = new gfx.Renderer(canvas.width, canvas.height);
+
+			XD.renderer.clearColor = new gfx.Color(0.0, 0.0, 0.0, 1.0);
+
+			this._prevWidth = canvas.width;
+			this._prevHeight = canvas.height;
 
 			if (this.onpreload) {
 				this.onpreload(XD.assets);
@@ -75,9 +86,22 @@ namespace XD {
 			if (this._accum >= this._frameTime) {
 				this._accum -= this._frameTime;
 				this._game.onUpdate(this._frameTime);
+
+				if (this._prevWidth != canvas.width ||
+					this._prevHeight != canvas.height)
+				{
+					XD.renderer.resize(canvas.width, canvas.height);
+					this._prevWidth = canvas.width;
+					this._prevHeight = canvas.height;
+				}
 			}
 
-			this._game.onRender();
+			XD.renderer.clear();
+			XD.renderer.begin();
+			this._game.onRender(XD.renderer);
+			XD.renderer.end();
+			XD.renderer.render();
+
 			this._frames++;
 
 			WebUtil.requestAnimationFrame(this.mainloop.bind(this, canvas));
